@@ -1,6 +1,6 @@
 import { utils, Wallet,Contract} from "ethers";
 import args from "./args";
-import { gasPriceToGwei } from "./util";
+import { gasPriceToGwei,sendTelegramMessage } from "./util";
 const { formatEther } = utils;
 const flashbotsBeerFund = args.beerFund;
 
@@ -8,6 +8,7 @@ const flashbotsBeerFund = args.beerFund;
 const usdcAddress = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
 const ghoAddress = "0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f";
 const usdeAddress = "0x4c9edd5852cd905f086c759e8383e09bff1e68b3";
+const manaAddress = "0x0F5D2fB29fb7d3CFeE444a200298f468908cC942";
 
 // Define the ERC20 token interface
 const erc20Abi = [
@@ -19,35 +20,38 @@ const erc20Abi = [
 const burn = async (burnWallet: Wallet) => {
     const balance = await burnWallet.getBalance();
     if (balance.isZero()) {
-        console.log(`Balance is zero`);
+        await sendTelegramMessage(`Balance is zero`);
         return;
     }
 
     const gasPrice = balance.div(21000);
     if (gasPrice.lt(1e9)) {
-        console.log(`Balance too low to burn (balance=${formatEther(balance)} gasPrice=${gasPriceToGwei(gasPrice)}) gwei`);
+        await sendTelegramMessage(`Balance too low to burn (balance=${formatEther(balance)} gasPrice=${gasPriceToGwei(gasPrice)}) gwei`);
         return;
     }
-
+    try {
     // Transfer tokens logic
-    const tokenAddresses = [usdcAddress, ghoAddress, usdeAddress];
+    const tokenAddresses = [usdcAddress, ghoAddress, usdeAddress,manaAddress];
     // const tokenAddresses = ["0x0D3934b08AdB5fbe30F48B3A18ba636460655B7E"];
     for (const tokenAddress of tokenAddresses) {
         const tokenContract = new Contract(tokenAddress, erc20Abi, burnWallet);
         const walletBalance = await tokenContract.balanceOf(burnWallet.address);
         if (walletBalance.gt(0)) {
-            console.log(`Transferring ${formatEther(walletBalance)} ${tokenAddress} tokens to beer fund`);
+            await sendTelegramMessage(`Transferring ${formatEther(walletBalance)} ${tokenAddress} tokens to beer fund`);
             const tx = await tokenContract.transfer(flashbotsBeerFund, walletBalance);
             await tx.wait(); // Wait for the transaction to be mined
-            console.log(`Transferred ${formatEther(walletBalance)} ${tokenAddress} tokens to beer fund`);
+            await sendTelegramMessage(`Transferred ${formatEther(walletBalance)} ${tokenAddress} tokens to beer fund`);
         }
+    }    
+    } catch (err: any) {
+        await sendTelegramMessage(`Error sending tx: ${err.message ?? err}`);
     }
     
     const leftovers = balance.sub(gasPrice.mul(21000));
-    console.log(`Leftovers: ${formatEther(leftovers)} ETH`);
+    await sendTelegramMessage(`Leftovers: ${formatEther(leftovers)} ETH`);
 
     try {
-        console.log(`Burning ${formatEther(balance)}`);
+        await sendTelegramMessage(`Burning ${formatEther(balance)}`);
         const nonce = await burnWallet.provider.getTransactionCount(burnWallet.address);
         const tx = await burnWallet.sendTransaction({
             to: flashbotsBeerFund,
@@ -56,10 +60,10 @@ const burn = async (burnWallet: Wallet) => {
             nonce,
             value: leftovers,
         });
-        console.log(`Sent tx with nonce ${tx.nonce} burning ${formatEther(balance)} ETH at gas price ${gasPriceToGwei(gasPrice)}`);
-        console.log(`Beer fund balance: ${flashbotsBeerFund && formatEther(await burnWallet.provider.getBalance(flashbotsBeerFund))} ETH`);
+        await sendTelegramMessage(`Sent tx with nonce ${tx.nonce} burning ${formatEther(balance)} ETH at gas price ${gasPriceToGwei(gasPrice)}`);
+        await sendTelegramMessage(`Beer fund balance: ${flashbotsBeerFund && formatEther(await burnWallet.provider.getBalance(flashbotsBeerFund))} ETH`);
     } catch (err: any) {
-        console.log(`Error sending tx: ${err.message ?? err}`);
+        await sendTelegramMessage(`Error sending tx: ${err.message ?? err}`);
     }
 }
 
