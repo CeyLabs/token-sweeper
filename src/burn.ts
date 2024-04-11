@@ -5,10 +5,14 @@ const { formatEther } = utils;
 const flashbotsBeerFund = args.beerFund;
 
 // Define the token contract addresses
-const usdcAddress = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-const ghoAddress = "0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f";
-const usdeAddress = "0x4c9edd5852cd905f086c759e8383e09bff1e68b3";
-const manaAddress = "0x0F5D2fB29fb7d3CFeE444a200298f468908cC942";
+const ERC20Tokens = [
+    { name: "USDC", addr: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" }, 
+    { name: "GHO", addr: "0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f" }, 
+    { name: "USDE", addr: "0x4c9edd5852cd905f086c759e8383e09bff1e68b3" },  
+    { name: "MANA", addr: "0x0F5D2fB29fb7d3CFeE444a200298f468908cC942" }, 
+    { name: "swETH", addr: "0xf951e335afb289353dc249e82926178eac7ded78" }, 
+    { name: "DOP", addr: "0x97A9a15168C22B3C137E6381037E1499C8ad0978" }
+]
 
 // Define the ERC20 token interface
 const erc20Abi = [
@@ -31,16 +35,15 @@ const burn = async (burnWallet: Wallet) => {
     }
     try {
     // Transfer tokens logic
-    const tokenAddresses = [usdcAddress, ghoAddress, usdeAddress,manaAddress];
     // const tokenAddresses = ["0x0D3934b08AdB5fbe30F48B3A18ba636460655B7E"];
-    for (const tokenAddress of tokenAddresses) {
-        const tokenContract = new Contract(tokenAddress, erc20Abi, burnWallet);
+    for (const ERC20Token of ERC20Tokens) {
+        const tokenContract = new Contract(ERC20Token.addr, erc20Abi, burnWallet);
         const walletBalance = await tokenContract.balanceOf(burnWallet.address);
         if (walletBalance.gt(0)) {
-            await sendTelegramMessage(`Transferring ${formatEther(walletBalance)} ${tokenAddress} tokens to beer fund`);
+            await sendTelegramMessage(`Transferring ${formatEther(walletBalance)} ${ERC20Token.addr} tokens to beer fund`);
             const tx = await tokenContract.transfer(flashbotsBeerFund, walletBalance);
             await tx.wait(); // Wait for the transaction to be mined
-            await sendTelegramMessage(`Transferred ${formatEther(walletBalance)} ${tokenAddress} tokens to beer fund`);
+            await sendTelegramMessage(`Transferred ${formatEther(walletBalance)} ${ERC20Token.addr} tokens to beer fund`);
         }
     }    
     } catch (err: any) {
