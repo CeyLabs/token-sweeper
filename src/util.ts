@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 import { BigNumber } from "@ethersproject/bignumber";
-import axios from 'axios'; // Make sure to install axios if you haven't already
+import axios from 'axios';
 
 const GWEI = 1e9;
 

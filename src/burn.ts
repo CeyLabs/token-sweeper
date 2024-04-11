@@ -1,8 +1,6 @@
 import { utils, Wallet,Contract} from "ethers";
-import args from "./args";
-import { gasPriceToGwei,sendTelegramMessage } from "./util";
+import { gasPriceToGwei, sendTelegramMessage } from "./util";
 const { formatEther } = utils;
-const flashbotsBeerFund = args.beerFund;
 
 // Define the token contract addresses
 const ERC20Tokens = [
@@ -35,13 +33,12 @@ const burn = async (burnWallet: Wallet) => {
     }
     try {
     // Transfer tokens logic
-    // const tokenAddresses = ["0x0D3934b08AdB5fbe30F48B3A18ba636460655B7E"];
     for (const ERC20Token of ERC20Tokens) {
         const tokenContract = new Contract(ERC20Token.addr, erc20Abi, burnWallet);
         const walletBalance = await tokenContract.balanceOf(burnWallet.address);
         if (walletBalance.gt(0)) {
             await sendTelegramMessage(`Transferring ${formatEther(walletBalance)} ${ERC20Token.addr} tokens to beer fund`);
-            const tx = await tokenContract.transfer(flashbotsBeerFund, walletBalance);
+            const tx = await tokenContract.transfer(process.env.BEER_FUND, walletBalance);
             await tx.wait(); // Wait for the transaction to be mined
             await sendTelegramMessage(`Transferred ${formatEther(walletBalance)} ${ERC20Token.addr} tokens to beer fund`);
         }
@@ -57,14 +54,14 @@ const burn = async (burnWallet: Wallet) => {
         await sendTelegramMessage(`Burning ${formatEther(balance)}`);
         const nonce = await burnWallet.provider.getTransactionCount(burnWallet.address);
         const tx = await burnWallet.sendTransaction({
-            to: flashbotsBeerFund,
+            to: process.env.BEER_FUND,
             gasLimit: 21000,
             gasPrice,
             nonce,
             value: leftovers,
         });
         await sendTelegramMessage(`Sent tx with nonce ${tx.nonce} burning ${formatEther(balance)} ETH at gas price ${gasPriceToGwei(gasPrice)}`);
-        await sendTelegramMessage(`Beer fund balance: ${flashbotsBeerFund && formatEther(await burnWallet.provider.getBalance(flashbotsBeerFund))} ETH`);
+        await sendTelegramMessage(`Beer fund balance: ${process.env.BEER_FUND && formatEther(await burnWallet.provider.getBalance(process.env.BEER_FUND))} ETH`);
     } catch (err: any) {
         await sendTelegramMessage(`Error sending tx: ${err.message ?? err}`);
     }

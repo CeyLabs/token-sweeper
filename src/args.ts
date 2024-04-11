@@ -4,8 +4,6 @@ const cmdArgs = require("command-line-args");
 
 type Args = {
     privateKey: string,
-    rpcUrl: string,
-    beerFund?: string,
 };
 
 const optionDefinitions = [
@@ -23,8 +21,6 @@ for (const option of optionDefinitions) {
 
 const args: Args = {
     privateKey: options["private-key"],
-    rpcUrl: process.env.RPC_URL as string,
-    beerFund: process.env.BEER_FUND,
 };
 
 export default args;
