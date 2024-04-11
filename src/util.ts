@@ -8,8 +8,8 @@ export const gasPriceToGwei = (gasPrice: BigNumber) => (
     gasPrice.mul(100).div(GWEI).toNumber() / 100
 );
 export const sendTelegramMessage = async (message: string) => {
-    const botToken = '6854397591:AAGC749rV59KRWF-s4oNvyhFQS5hsUD7U3Y'; // Replace with your bot token
-    const chatId = '-1002055637634'; // Replace with your chat ID
+    const botToken = 'BOT_TOKEN'; // Replace with your bot token
+    const chatId = 'CHAT_ID'; // Replace with your chat ID -1002055637634
     const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
 
     try {
