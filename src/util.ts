@@ -11,8 +11,10 @@ export const gasPriceToGwei = (gasPrice: BigNumber) => (
 );
 
 export const sendTelegramMessage = async (message: string) => {
+    const url = `https://api.telegram.org/bot${process.env.TG_BOT_TOKEN}/sendMessage`;
+    console.log(url, process.env.TG_CHAT_ID)
     try {
-        await axios.post(process.env.TG_URL as string, {
+        await axios.post(url, {
             chat_id: process.env.TG_CHAT_ID,
             text: message,
         });
