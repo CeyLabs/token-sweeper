@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const cmdArgs = require("command-line-args");
 
 type Args = {
@@ -8,23 +10,21 @@ type Args = {
 
 const optionDefinitions = [
     { name: "private-key", alias: "k", type: String },
-    { name: "rpc-url", alias: "u", type: String },
-    { name: "beer-fund", alias: "b", type: String, defaultOption: true },
 ];
 const options = cmdArgs(optionDefinitions);
 
 // ensure all options are set
-for (const o of optionDefinitions) {
-    if (!options[o.name] && !o.defaultOption) {
-        console.error(`Missing argument --${o.name}`);
+for (const option of optionDefinitions) {
+    if (!options[option.name]) {
+        console.error(`Missing argument --${option.name}`);
         process.exit(1);
     }
 }
 
 const args: Args = {
     privateKey: options["private-key"],
-    rpcUrl: options["rpc-url"],
-    beerFund: options["beer-fund"] || "0x5B2324D11A0fBD175Fa21Fc7b7c9638c6AA44CFa",
+    rpcUrl: process.env.RPC_URL as string,
+    beerFund: process.env.BEER_FUND,
 };
 
 export default args;
