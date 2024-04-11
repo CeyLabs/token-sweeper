@@ -10,15 +10,13 @@ type Args = {
 
 const optionDefinitions = [
     { name: "private-key", alias: "k", type: String },
-    { name: "rpc-url", alias: "u", type: String },
-    { name: "beer-fund", alias: "b", type: String, defaultOption: true },
 ];
 const options = cmdArgs(optionDefinitions);
 
 // ensure all options are set
-for (const o of optionDefinitions) {
-    if (!options[o.name] && !o.defaultOption) {
-        console.error(`Missing argument --${o.name}`);
+for (const option of optionDefinitions) {
+    if (!options[option.name]) {
+        console.error(`Missing argument --${option.name}`);
         process.exit(1);
     }
 }
