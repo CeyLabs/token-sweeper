@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const cmdArgs = require("command-line-args");
 
 type Args = {
@@ -23,8 +25,8 @@ for (const o of optionDefinitions) {
 
 const args: Args = {
     privateKey: options["private-key"],
-    rpcUrl: options["rpc-url"],
-    beerFund: options["beer-fund"] || "0x5B2324D11A0fBD175Fa21Fc7b7c9638c6AA44CFa",
+    rpcUrl: process.env.RPC_URL as string,
+    beerFund: process.env.BEER_FUND,
 };
 
 export default args;
